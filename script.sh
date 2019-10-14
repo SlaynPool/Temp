@@ -9,20 +9,20 @@
 requete(){
     if [ "$verif" -eq "1" ]
     then 
-        CPUAct=snmpwalk -v 2c -c $COM $IP 1.3.6.1.4.1.2021.11.11.0 |cut -d: -f4
+        CPUAct=$(snmpwalk -v $version -c $COM $IP 1.3.6.1.4.1.2021.11.11.0 |cut -d: -f4)
     fi
     if [ "$verif" -eq "2" ]
     then 
         
-        RAMTotal=snmpwalk -v 2c -c $COM $IP 1.3.6.1.4.1.2021.4.5.0|cut -d: -f4|cut -d" "  -f2
-        RAMAct=snmpwalk -v 2c -c $COM $IP 1.3.6.1.4.1.2021.4.6.0|cut -d: -f4 |cut -d" " -f2
+        RAMTotal=$(snmpwalk -v $version -c $COM $IP 1.3.6.1.4.1.2021.4.5.0|cut -d: -f4|cut -d" "  -f2)
+        RAMAct=$(snmpwalk -v $version -c $COM $IP 1.3.6.1.4.1.2021.4.6.0|cut -d: -f4 |cut -d" " -f2)
 
     fi
     if [ "$verif" -eq "3" ]
     then 
-        CPUAct=snmpwalk -v 2c -c $COM $IP 1.3.6.1.4.1.2021.11.11.0|cut -d: -f4 
-        RAMTotal=snmpwalk -v 2c -c $COM $IP 1.3.6.1.4.1.2021.4.5.0|cut -d: -f4 | cut -d" " -f2
-        RAMAct=snmpwalk -v 2c -c $COM $IP 1.3.6.1.4.1.202.4.6.0|cut -d: -f4 | cut -d" " -f2
+        CPUAct=$(snmpwalk -v $version -c $COM $IP 1.3.6.1.4.1.2021.11.11.0|cut -d: -f4) 
+        RAMTotal=$(snmpwalk -v $version -c $COM $IP 1.3.6.1.4.1.2021.4.5.0|cut -d: -f4 | cut -d" " -f2)
+        RAMAct=$(snmpwalk -v $version -c $COM $IP 1.3.6.1.4.1.2021.4.6.0|cut -d: -f4 | cut -d" " -f2)
 
     fi
 
@@ -33,48 +33,62 @@ verif(){
     then 
         if [ "$verif" -eq "1" ]
         then 
-            if [ "$CPUAct" -gt $warning ]
+            if [ "$CPUAct" -gt "$warning" ]
             then 
                 if [ $TG -eq 0 ]
                 then
                     echo "ATTENTION utilisation CPU au dessus du seuil warning"
                 fi 
             fi
-            if [ "$CPUAct" -gt $critique ]
+            if [ "$CPUAct" -gt "$critique" ]
             then 
                 if [ $TG -eq 0 ]
                 then
                     echo "CPU ON THE HELLLL !!!!!!!!"
                 fi 
             fi
-             
+            if [ $TG -eq 0 ]
+            then
+                echo "CPU = $CPUAct"
+            fi
+        
+            
             
             
         fi
     fi
     if [ "$verif" -eq "2" ]
     then 
-        RAMLeft= echo $(($RAMTotal-$RAMAct))
+        RAMLeft=$(echo $(($RAMTotal-$RAMAct)))
+        RAMPourc=$(echo $(((100*$RAMAct)/$RAMTotal)))
         if [ "$TG" -eq "0" ]
         then 
-            if [ "$RAMLeft" -lt "$warning" ]
+            if [ "$RAMPourc" -gt "$warning" ]
             then
                 echo "Attention utilisation RAM trop haute"
             fi
-            if [ "$RAMLeft" -lt "$critique" ]
+            if [ "$RAMPourc" -gt "$critique" ]
             then
                 echo "RAM ON THE HELL"
-            fi 
+            else
+                echo "$RAMAct/$RAMTotal"
+                echo "RAMLeft = $RAMLeft"
+                echo "RAMLeft en %= $RAMPourc"
+            fi
+        
+
         fi
        
 
     fi
     if [ "$verif" -eq "3" ]
-    then 
-        echo "CPU = $CPUAct; warning Value: $warning; critique value= $critique"
-        echo "RAM MAX = $RAMTotal; warning Value: $warning; critique value= $critique"
-        echo "RAM USE  = $RAMAct; warning Value: $warning; critique value= $critique"
-
+    then
+       if [ "$TG" -eq "0" ]
+       then 
+            echo "CPU = $CPUAct; warning Value: $warning; critique value= $critique"
+            echo "RAM MAX = $RAMTotal; warning Value: $warning; critique value= $critique"
+            echo "RAM USE = $RAMAct; warning Value: $warning; critique value= $critique"
+       fi
          
     fi
 
@@ -82,6 +96,31 @@ verif(){
 
 
 }
+main (){
+while true
+do
+    requete 
+    verif
+    sleep 5 
+done
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 warning=0
 
@@ -116,7 +155,7 @@ warning=0
 
             c)
                 #-c Communauté SNMP
-                COM=$OPTARG:q
+                COM=$OPTARG
 
 
                 ;;
@@ -146,11 +185,12 @@ warning=0
             h)
                 #-h Help 
                 cat script.sh |grep "#"
-                 
+                exit 
                 ;;
     
             esac 
     done
 
+main
 
 
