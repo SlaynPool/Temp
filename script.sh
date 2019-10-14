@@ -6,10 +6,10 @@
 #— OID SNMP espace memoire total : 1.3.6.1.4.1.2021.4.5.0 
 #— OID SNMP espace memoire libre : 1.3.6.1.4.1.2021.4.6.0
 
-fct_arg(){
-    while getopts "picvwW:P:" option
+
+    while getopts ":p:i:c:v:w:W:P:h:" option
     do
-        case $option in 
+        case "${option}" in 
             p)
                 #-p Defini le point de contrôle à aller verifier
                 #   1 pour verifier Taux Utilisation CPU
@@ -17,7 +17,7 @@ fct_arg(){
                 #   3 pour verifier les deux
                 if [ "$OPTARG" -eq "1" ]
                 then
-                    
+                    verif=1
                 fi
                 if [ "$OPTARG" -eq "2" ]
                 then
@@ -33,7 +33,7 @@ fct_arg(){
             i)  
                 #-i IP cible
                 IP=$OPTARG 
-
+                echo test
                 ;;
 
             c)
@@ -67,11 +67,14 @@ fct_arg(){
 
             h)
                 #-h Help 
-                cat $0 |grep #
+                cat script.sh |grep #
+                echo nique 
                 ;;
     
             esac 
     done
 
 
-}
+
+
+
