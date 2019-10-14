@@ -14,15 +14,15 @@ requete(){
     if [ "$verif" -eq "2" ]
     then 
         
-        RAMTotal=snmpwalk -v 2c -c $COM $IP 1.3.6.1.4.1.2021.4.5.0|cut -d: -f4
-        RAMAct=snmpwalk -v 2c -c $COM $IP 1.3.6.1.4.1.2021.4.6.0|cut -d: -f4
+        RAMTotal=snmpwalk -v 2c -c $COM $IP 1.3.6.1.4.1.2021.4.5.0|cut -d: -f4|cut -d" "  -f2
+        RAMAct=snmpwalk -v 2c -c $COM $IP 1.3.6.1.4.1.2021.4.6.0|cut -d: -f4 |cut -d" " -f2
 
     fi
     if [ "$verif" -eq "3" ]
     then 
-        CPUAct=snmpwalk -v 2c -c $COM $IP 1.3.6.1.4.1.2021.11.11.0|cut -d: -f4
-        RAMTotal=snmpwalk -v 2c -c $COM $IP 1.3.6.1.4.1.2021.4.5.0|cut -d: -f4
-        RAMAct=snmpwalk -v 2c -c $COM $IP 1.3.6.1.4.1.202.4.6.0|cut -d: -f4
+        CPUAct=snmpwalk -v 2c -c $COM $IP 1.3.6.1.4.1.2021.11.11.0|cut -d: -f4 
+        RAMTotal=snmpwalk -v 2c -c $COM $IP 1.3.6.1.4.1.2021.4.5.0|cut -d: -f4 | cut -d" " -f2
+        RAMAct=snmpwalk -v 2c -c $COM $IP 1.3.6.1.4.1.202.4.6.0|cut -d: -f4 | cut -d" " -f2
 
     fi
 
@@ -31,15 +31,59 @@ requete(){
 verif(){
     if [ "$warning" -ne 0 ]
     then 
+        if [ "$verif" -eq "1" ]
+        then 
+            if [ "$CPUAct" -gt $warning ]
+            then 
+                if [ $TG -eq 0 ]
+                then
+                    echo "ATTENTION utilisation CPU au dessus du seuil warning"
+                fi 
+            fi
+            if [ "$CPUAct" -gt $critique ]
+            then 
+                if [ $TG -eq 0 ]
+                then
+                    echo "CPU ON THE HELLLL !!!!!!!!"
+                fi 
+            fi
+             
+            
+            
+        fi
+    fi
+    if [ "$verif" -eq "2" ]
+    then 
+        RAMLeft= echo $(($RAMTotal-$RAMAct))
+        if [ "$TG" -eq "0" ]
+        then 
+            if [ "$RAMLeft" -lt "$warning" ]
+            then
+                echo "Attention utilisation RAM trop haute"
+            fi
+            if [ "$RAMLeft" -lt "$critique" ]
+            then
+                echo "RAM ON THE HELL"
+            fi 
+        fi
+       
 
     fi
+    if [ "$verif" -eq "3" ]
+    then 
+        echo "CPU = $CPUAct; warning Value: $warning; critique value= $critique"
+        echo "RAM MAX = $RAMTotal; warning Value: $warning; critique value= $critique"
+        echo "RAM USE  = $RAMAct; warning Value: $warning; critique value= $critique"
 
+         
+    fi
 
+    
 
 
 }
 
-warning = 0
+warning=0
 
     while getopts ":p:i:c:v:w:W:P:h:" option
     do
@@ -84,7 +128,7 @@ warning = 0
 
                 ;;
             w)  
-                #-w Définition Premier seuil d'alerte Warning
+                #-w Définition Premier seuil dalerte Warning
 
                 warning=$OPTARG
 
@@ -95,14 +139,14 @@ warning = 0
                 ;;
 
             P)
-                #-P Affiche les perfomances si egale 1
-                perf=$OPTARG
+                #-P Affiche les perfomances si egale 0
+                TG=$OPTARG
                 ;;
 
             h)
                 #-h Help 
-                cat script.sh |grep #
-                echo nique 
+                cat script.sh |grep "#"
+                 
                 ;;
     
             esac 
