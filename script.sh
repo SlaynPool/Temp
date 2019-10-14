@@ -6,6 +6,40 @@
 #— OID SNMP espace memoire total : 1.3.6.1.4.1.2021.4.5.0 
 #— OID SNMP espace memoire libre : 1.3.6.1.4.1.2021.4.6.0
 
+requete(){
+    if [ "$verif" -eq "1" ]
+    then 
+        CPUAct=snmpwalk -v 2c -c $COM $IP 1.3.6.1.4.1.2021.11.11.0 |cut -d: -f4
+    fi
+    if [ "$verif" -eq "2" ]
+    then 
+        
+        RAMTotal=snmpwalk -v 2c -c $COM $IP 1.3.6.1.4.1.2021.4.5.0|cut -d: -f4
+        RAMAct=snmpwalk -v 2c -c $COM $IP 1.3.6.1.4.1.2021.4.6.0|cut -d: -f4
+
+    fi
+    if [ "$verif" -eq "3" ]
+    then 
+        CPUAct=snmpwalk -v 2c -c $COM $IP 1.3.6.1.4.1.2021.11.11.0|cut -d: -f4
+        RAMTotal=snmpwalk -v 2c -c $COM $IP 1.3.6.1.4.1.2021.4.5.0|cut -d: -f4
+        RAMAct=snmpwalk -v 2c -c $COM $IP 1.3.6.1.4.1.202.4.6.0|cut -d: -f4
+
+    fi
+
+}
+
+verif(){
+    if [ "$warning" -ne 0 ]
+    then 
+
+    fi
+
+
+
+
+}
+
+warning = 0
 
     while getopts ":p:i:c:v:w:W:P:h:" option
     do
@@ -73,8 +107,6 @@
     
             esac 
     done
-
-
 
 
 
